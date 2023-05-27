@@ -24,9 +24,14 @@ namespace GrowGreenWeb.Pages.Lecturer.Courses.Manage
 
         [BindProperty, DisplayName("Generated Transcript")]
         public string? GeneratedTranscript { get; set; } = string.Empty;
+        
+        [BindProperty, DisplayName("Flashcard Deck")]
+        public string? GeneratedFlashcard { get; set; } = string.Empty;
 
         public Course Course { get; set; } = null!;
         public Lecture Lecture { get; set; } = null!;
+
+        public User Lecturer { get; set; } = null!;
 
         public Video? VideoEdit { get; set; }
 
@@ -50,6 +55,7 @@ namespace GrowGreenWeb.Pages.Lecturer.Courses.Manage
             if (user == null)
                 return Page();
 
+            Lecturer = user;
             int lecturerId = user.Id;
 
             Course? course = _context.Courses
@@ -86,6 +92,7 @@ namespace GrowGreenWeb.Pages.Lecturer.Courses.Manage
                 Title = VideoEdit.Name;
                 Description = VideoEdit.Transcript;
                 GeneratedTranscript = VideoEdit.GeneratedTranscript;
+                GeneratedFlashcard = VideoEdit.FlashCardText;
             }
 
             return Page();
@@ -96,6 +103,8 @@ namespace GrowGreenWeb.Pages.Lecturer.Courses.Manage
             User? user = _accountService.GetCurrentUser(HttpContext);
             if (user == null)
                 return Page();
+            
+            Lecturer = user;
 
             int lecturerId = user.Id;
 
@@ -174,7 +183,8 @@ namespace GrowGreenWeb.Pages.Lecturer.Courses.Manage
                     Transcript = Description,
                     Url = webRootPath!,
                     LectureId = Lecture.Id,
-                    PreviewUrl = webRootPath! + ".jpg"
+                    PreviewUrl = webRootPath! + ".jpg",
+                    FlashCardText = GeneratedFlashcard
                 };
                 // check first if video already exist
 
@@ -211,6 +221,7 @@ namespace GrowGreenWeb.Pages.Lecturer.Courses.Manage
                     video.Url = webRootPath;
                     video.Timestamp = DateTime.Now;
                     video.PreviewUrl = webRootPath + ".jpg";
+                    video.FlashCardText = GeneratedFlashcard;
                     course.LastUpdatedTimestamp = DateTime.Now;
                 }
                 else if (file is null)
@@ -243,7 +254,7 @@ namespace GrowGreenWeb.Pages.Lecturer.Courses.Manage
             User? user = _accountService.GetCurrentUser(HttpContext);
             if (user == null)
                 return Page();
-
+            Lecturer = user;
             int lecturerId = user.Id;
 
             Course? course = _context.Courses

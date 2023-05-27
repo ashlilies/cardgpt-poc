@@ -31,6 +31,7 @@ builder.Services.AddTransient<EmailService>();
 builder.Services.AddTransient<DataImportService>();
 builder.Services.AddTransient<RecyclerService>();
 builder.Services.AddTransient<TranscriptionService>();
+builder.Services.AddTransient<OpenAIService>();
 
 // redirect to 403 on Forbid()
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

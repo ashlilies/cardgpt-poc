@@ -18,6 +18,7 @@ namespace GrowGreenWeb.Models
         public string Url { get; set; } = null!;
         public string PreviewUrl { get; set; } = null!;
         public string? GeneratedTranscript { get; set; }
+        public string? FlashCardText { get; set; }
 
         public virtual Lecture Lecture { get; set; } = null!;
         public virtual ICollection<VideoCompletion> VideoCompletions { get; set; }

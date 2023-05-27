@@ -50,13 +50,31 @@
                             @if (Model.GeneratedTranscript is null)
                             {
                                 <textarea class="form-control" disabled>
-                                Transcript is unavailable or still generating, please check back later...
-                            </textarea>
+                                    Transcript is unavailable or still generating, please check back later...
+                                </textarea>
                             }
                             else
                             {
                                 <textarea asp-for="GeneratedTranscript" class="form-control"></textarea>
                                 <span asp-validation-for="GeneratedTranscript" class="text-danger"></span>
+                            }
+
+                            if (Model.Lecturer.CardGptAllowed)
+                            {
+                                <label asp-for="GeneratedFlashcard" class="form-label"></label>
+
+                                @if (Model.GeneratedFlashcard is null)
+                                {
+                                    <textarea class="form-control" disabled>
+                                    Help your learners learn by generating a flashcard deck today!
+                                    You need a transcript to do this.
+                                </textarea>
+                                }
+                                else
+                                {
+                                    <textarea asp-for="GeneratedFlashcard" class="form-control"></textarea>
+                                    <span asp-validation-for="GeneratedFlashcard" class="text-danger"></span>
+                                }
                             }
                         }
                     </div>

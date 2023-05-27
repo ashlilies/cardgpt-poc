@@ -40,6 +40,7 @@ namespace GrowGreenWeb.Models
         public bool IsAdmin { get; set; }
         public bool IsLecturer { get; set; }
         public bool IsLearner { get; set; }
+        public bool CardGptAllowed { get; set; }
 
         public virtual PointsEarned? PointsEarned { get; set; }
         public virtual ICollection<BadgeLearner> BadgeLearners { get; set; }
