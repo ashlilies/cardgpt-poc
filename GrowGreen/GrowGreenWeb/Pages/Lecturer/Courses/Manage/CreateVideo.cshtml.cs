@@ -362,7 +362,7 @@ namespace GrowGreenWeb.Pages.Lecturer.Courses.Manage
 
             IsGeneratingFlashcards = true;
             
-            return OnGet(id, lectureId, videoId);
+            return RedirectToPage("Contents", new { id, lectureId });
         }
     }
 }
