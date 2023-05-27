@@ -62,13 +62,28 @@
                             if (Model.Lecturer.CardGptAllowed)
                             {
                                 <label asp-for="GeneratedFlashcard" class="form-label"></label>
+                                @* <form method="post" asp-page-handler="GenerateFlashcards" asp-route-id="@Model.Course.Id" asp-route-lectureId="@Model.Lecture.Id" *@
+                                @*       asp-route-videoId="@Model.VideoEdit?.Id"> *@
+                                @*     <button class="btn btn-secondary">Generate Flashcards</button> *@
+                                @* </form> *@
+
+                                <button type="button" class="btn btn-secondary w-100" data-bs-toggle="modal"
+                                        data-bs-target="#cardGptModal">
+                                    Generate Flashcards
+                                </button>
 
                                 @if (Model.GeneratedFlashcard is null)
                                 {
                                     <textarea class="form-control" disabled>
-                                    Help your learners learn by generating a flashcard deck today!
-                                    You need a transcript to do this.
-                                </textarea>
+                                        Help your learners learn by generating a flashcard deck today!
+                                        You need a transcript to do this.
+                                    </textarea>
+                                }
+                                else if (Model.IsGeneratingFlashcards)
+                                {
+                                    <textarea class="form-control" disabled>
+                                        Generating flashcards, check back later...
+                                    </textarea>
                                 }
                                 else
                                 {
@@ -104,6 +119,30 @@
 
     </div>
 </div>
+
+
+<div class="modal fade" id="cardGptModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cardGptLabel">Generate Cards</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                This will cost you <strong>0</strong> credits.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+
+                <form method="post" asp-page-handler="GenerateFlashcards" asp-route-id="@Model.Course.Id" asp-route-lectureId="@Model.Lecture.Id"
+                      asp-route-videoId="@Model.VideoEdit?.Id">
+                    <button class="btn btn-success">Generate</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">

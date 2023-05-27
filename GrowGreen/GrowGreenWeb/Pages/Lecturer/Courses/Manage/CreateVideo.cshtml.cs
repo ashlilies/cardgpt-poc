@@ -28,6 +28,8 @@ namespace GrowGreenWeb.Pages.Lecturer.Courses.Manage
         [BindProperty, DisplayName("Flashcard Deck")]
         public string? GeneratedFlashcard { get; set; } = string.Empty;
 
+        public bool IsGeneratingFlashcards { get; private set; } = false;
+
         public Course Course { get; set; } = null!;
         public Lecture Lecture { get; set; } = null!;
 
@@ -39,14 +41,19 @@ namespace GrowGreenWeb.Pages.Lecturer.Courses.Manage
         private readonly IWebHostEnvironment _environment;
         private AccountService _accountService;
         private readonly TranscriptionService _transcriptionService;
+        private readonly OpenAIService _openAiService;
+        private readonly ILogger<CreateVideoModel> _logger;
 
         public CreateVideoModel(GrowGreenContext context, IWebHostEnvironment environment,
-            AccountService accountService, TranscriptionService transcriptionService)
+            AccountService accountService, TranscriptionService transcriptionService, 
+            OpenAIService openAiService, ILogger<CreateVideoModel> logger)
         {
             _context = context;
             _environment = environment;
             _accountService = accountService;
             _transcriptionService = transcriptionService;
+            _openAiService = openAiService;
+            _logger = logger;
         }
 
         public IActionResult OnGet(int id, int lectureId, int? videoId = null)
@@ -221,12 +228,12 @@ namespace GrowGreenWeb.Pages.Lecturer.Courses.Manage
                     video.Url = webRootPath;
                     video.Timestamp = DateTime.Now;
                     video.PreviewUrl = webRootPath + ".jpg";
-                    video.FlashCardText = GeneratedFlashcard;
                     course.LastUpdatedTimestamp = DateTime.Now;
                 }
                 else if (file is null)
                 {
                     video.GeneratedTranscript = GeneratedTranscript;
+                    video.FlashCardText = GeneratedFlashcard;
                     course.LastUpdatedTimestamp = DateTime.Now;
                 }
 
@@ -289,6 +296,73 @@ namespace GrowGreenWeb.Pages.Lecturer.Courses.Manage
             _context.SaveChanges();
 
             return RedirectToPage("Contents", new { id, lectureId });
+        }
+
+        public IActionResult OnPostGenerateFlashcards(
+            int id, int lectureId, int videoId)
+        {
+            ModelState.Clear();
+            
+            User? user = _accountService.GetCurrentUser(HttpContext);
+            if (user == null)
+                return Page();
+            Lecturer = user;
+            int lecturerId = user.Id;
+
+            if (!Lecturer.CardGptAllowed)
+            {
+                return StatusCode(403);
+            }
+
+            Course? course = _context.Courses
+                .Include(c => c.Lectures)
+                .SingleOrDefault(c => c.Id == id);
+            if (course is null)
+                return NotFound();
+
+            if (course.LecturerId != lecturerId)
+                return Forbid();
+
+            Course = course;
+            Lecture? lecture = _context.Lectures
+                .Include(l => l.Videos)
+                .SingleOrDefault(l => l.Id == lectureId);
+
+            if (lecture is null)
+                return NotFound();
+            if (lecture.CourseId != course.Id)
+                return Forbid();
+
+            Video? video = _context.Videos.Find(videoId);
+            if (video is null)
+            {
+                return NotFound();
+            }
+
+            if (video.GeneratedTranscript is null)
+            {
+                TempData["FlashMessage.Type"] = "danger";
+                TempData["FlashMessage.Text"] = "You need a transcript to start.";
+                return OnGet(id, lectureId, videoId);
+            }
+            
+            // generate flashcards
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    return _openAiService.CreateFlashCardTextFromVideo(video, video.GeneratedTranscript);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("{ExMessage}", ex.Message);
+                    throw new Exception("CardGPT Error!");
+                }
+            });
+
+            IsGeneratingFlashcards = true;
+            
+            return OnGet(id, lectureId, videoId);
         }
     }
 }
