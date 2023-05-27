@@ -56,7 +56,8 @@ namespace GrowGreenWeb.Pages.Lecturer.Courses.Manage
             _logger = logger;
         }
 
-        public IActionResult OnGet(int id, int lectureId, int? videoId = null)
+        public IActionResult OnGet(int id, int lectureId, int? videoId = null,
+            bool isGeneratingFlashcards = false)
         {
             User? user = _accountService.GetCurrentUser(HttpContext);
             if (user == null)
@@ -64,6 +65,8 @@ namespace GrowGreenWeb.Pages.Lecturer.Courses.Manage
 
             Lecturer = user;
             int lecturerId = user.Id;
+            
+            IsGeneratingFlashcards = isGeneratingFlashcards;
 
             Course? course = _context.Courses
                 .Include(c => c.Lectures)
@@ -76,6 +79,7 @@ namespace GrowGreenWeb.Pages.Lecturer.Courses.Manage
 
             Course = course;
             ViewData["CourseId"] = course.Id;
+
 
             Lecture? lecture = _context.Lectures
                 .Include(l => l.Videos)
@@ -362,7 +366,7 @@ namespace GrowGreenWeb.Pages.Lecturer.Courses.Manage
 
             IsGeneratingFlashcards = true;
             
-            return RedirectToPage("Contents", new { id, lectureId });
+            return RedirectToPage(new { id, lectureId, videoId, isGeneratingFlashCards = true });
         }
     }
 }

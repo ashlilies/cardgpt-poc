@@ -79,7 +79,8 @@
                                         You need a transcript to do this.
                                     </textarea>
                                 }
-                                else if (Model.IsGeneratingFlashcards)
+                                else if (Model.IsGeneratingFlashcards 
+                                         && Model.GeneratedFlashcard.Contains("Flashcard Deck is unavailable or still generating"))
                                 {
                                     <textarea class="form-control" disabled>
                                         Generating flashcards, check back later...
